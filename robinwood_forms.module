@@ -1,1 +1,44 @@
 <?php
+
+/**
+ * Implements hook_inline_entity_form_entity_form_alter().
+ */
+function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+  $product_ids = array(
+    'donation' => 1,
+    'active_membership' => 2,
+    'sponsor_membership' => 3,
+  );
+
+  if ($entity_form['#entity_type'] == 'commerce_line_item' && in_array($entity_form['#parents'][0], array(
+      'field_line_item_donation',
+      'field_act_membership_line_item',
+      'field_sup_membership_line_item',
+    ))) {
+    // Set quantity field value and do not show a widget.
+    $entity_form['quantity']['#type'] = 'value';
+    $entity_form['quantity']['#value'] = 1;
+
+    // Set product field value and do not show a widget.
+    $product_field = &$entity_form['commerce_product'];
+    $product_field_language = $product_field['#language'];
+    $product_field[$product_field_language]['#type'] = 'value';
+
+    switch($entity_form['#parents'][0]) {
+      case 'field_line_item_donation':
+        $product_field[$product_field_language]['#value'] = $product_ids['donation'];
+        break;
+      case 'field_act_membership_line_item':
+        $product_field[$product_field_language]['#value'] = $product_ids['active_membership'];
+
+        // Additionally, change interval field label visibility.
+        break;
+      case 'field_sup_membership_line_item':
+        $product_field[$product_field_language]['#value'] = $product_ids['sponsor_membership'];
+
+        // Additionally, change interval field label visibility.
+        $entity_form['field_membership_support_interva'][$entity_form['field_membership_support_interva']['#language']]['#title_display'] = 'invisible';
+        break;
+    }
+  }
+}
