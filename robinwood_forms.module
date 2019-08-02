@@ -8,10 +8,12 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
     'donation' => 1,
     'active_membership' => 2,
     'sponsor_membership' => 3,
+    'regular_donation' => 4,
   );
 
   if ($entity_form['#entity_type'] == 'commerce_line_item' && in_array($entity_form['#parents'][0], array(
       'field_line_item_donation',
+      'field_regular_donation_line_item',
       'field_act_membership_line_item',
       'field_sup_membership_line_item',
     ))) {
@@ -27,6 +29,9 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
     switch($entity_form['#parents'][0]) {
       case 'field_line_item_donation':
         $product_field[$product_field_language]['#value'] = $product_ids['donation'];
+        break;
+      case 'field_regular_donation_line_item':
+        $product_field[$product_field_language]['#value'] = $product_ids['regular_donation'];
         break;
       case 'field_act_membership_line_item':
         $product_field[$product_field_language]['#value'] = $product_ids['active_membership'];
