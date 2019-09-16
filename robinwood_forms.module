@@ -47,3 +47,23 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
     }
   }
 }
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $context) {
+  if (
+    $context['field']['type'] == 'addressfield'
+    && $context['instance']['entity_type'] == 'commerce_customer_profile'
+    && $context['instance']['field_name'] == 'commerce_customer_address'
+    && in_array($element['#field_parents'][0], array(
+      'field_donation_customer_profile',
+      'field_member_customer_profil',
+      '',
+    ))
+  ) {
+    $element['street_block']['thoroughfare']['#title'] = 'Straße, Hausnummer';
+    $element['street_block']['premise']['#access'] = FALSE;
+    $element['country']['#weight'] = 51;
+  }
+}
