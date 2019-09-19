@@ -1,3 +1,5 @@
 name = RobinWood Forms
 description = Adds functionality and usability fixes to donation and membership forms
 core = 7.x
+
+dependencies[] = cmrf_core

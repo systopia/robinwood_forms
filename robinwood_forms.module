@@ -52,6 +52,7 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
  * Implements hook_field_widget_form_alter().
  */
 function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $context) {
+  // Alter address fields in customer profiles.
   if (
     $context['field']['type'] == 'addressfield'
     && $context['instance']['entity_type'] == 'commerce_customer_profile'
@@ -65,5 +66,37 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
     $element['street_block']['thoroughfare']['#title'] = 'Straße, Hausnummer';
     $element['street_block']['premise']['#access'] = FALSE;
     $element['country']['#weight'] = 51;
+  }
+
+  // Add custom validation to IBAN field in payment transaction forms.
+  if (
+    $context['instance']['entity_type'] == 'commerce_payment_transaction'
+    && $context['instance']['field_name'] == 'field_bic'
+  ) {
+    if (!isset($element['value']['#element_validate'])) {
+      $element['value']['#element_validate'] = array();
+    }
+    array_unshift($element['value']['#element_validate'], '_robinwood_forms_bic_field_validate');
+  }
+}
+
+function _robinwood_forms_bic_field_validate($element, &$form_state, $form) {
+  $iban_parents = array_merge(
+    $element['#field_parents'],
+    array(
+      'field_iban',
+      LANGUAGE_NONE,
+      0,
+      'iban_field',
+    )
+  );
+  $iban = drupal_array_get_nested_value($form_state['values'], $iban_parents);
+  // TODO:
+  //   $bic = _robinwood_forms_get_bic_from_iban($iban);
+  if (!empty($bic)) {
+    form_set_value($element, $bic, $form_state);
+  }
+  else {
+    form_error($element, 'Die BIC konnte nicht automatisch ermittelt werden, bitte geben Sie diese ein.');
   }
 }
