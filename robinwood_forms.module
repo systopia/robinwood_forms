@@ -49,6 +49,18 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function robinwood_forms_form_alter(&$form, &$form_state, $form_id) {
+  if (in_array($form_id, array(
+    'donation_entityform_edit_form',
+  ))) {
+    $field_language = $form['field_donation_customer_profile']['#language'];
+    $form['field_donation_customer_profile'][$field_language]['profiles'][0]['#title'] = $form['field_donation_customer_profile'][$field_language]['#title'];
+  }
+}
+
+/**
  * Implements hook_field_widget_form_alter().
  */
 function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $context) {
