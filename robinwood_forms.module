@@ -68,7 +68,7 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
     $element['country']['#weight'] = 51;
   }
 
-  // Add custom validation to IBAN field in payment transaction forms.
+  // Add custom validation to BIC field in payment transaction forms.
   if (
     $context['instance']['entity_type'] == 'commerce_payment_transaction'
     && $context['instance']['field_name'] == 'field_bic'
@@ -81,22 +81,24 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
 }
 
 function _robinwood_forms_bic_field_validate($element, &$form_state, $form) {
-  $iban_parents = array_merge(
-    $element['#field_parents'],
-    array(
-      'field_iban',
-      LANGUAGE_NONE,
-      0,
-      'iban_field',
-    )
-  );
-  $iban = drupal_array_get_nested_value($form_state['values'], $iban_parents);
-  // TODO:
-  //   $bic = _robinwood_forms_get_bic_from_iban($iban);
-  if (!empty($bic)) {
-    form_set_value($element, $bic, $form_state);
-  }
-  else {
-    form_error($element, 'Die BIC konnte nicht automatisch ermittelt werden, bitte geben Sie diese ein.');
+  if (empty($element['#value'])) {
+    $iban_parents = array_merge(
+      $element['#field_parents'],
+      array(
+        'field_iban',
+        LANGUAGE_NONE,
+        0,
+        'iban_field',
+      )
+    );
+    $iban = drupal_array_get_nested_value($form_state['values'], $iban_parents);
+    // TODO:
+    //   $bic = _robinwood_forms_get_bic_from_iban($iban);
+    if (!empty($bic)) {
+      form_set_value($element, $bic, $form_state);
+    }
+    else {
+      form_error($element, 'Die BIC konnte nicht automatisch ermittelt werden, bitte geben Sie diese ein.');
+    }
   }
 }
