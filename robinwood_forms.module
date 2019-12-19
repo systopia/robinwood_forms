@@ -98,24 +98,71 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
 }
 
 function _robinwood_forms_bic_field_validate($element, &$form_state, $form) {
+  $iban_parents = array_merge(
+    $element['#field_parents'],
+    array(
+      'field_iban',
+      LANGUAGE_NONE,
+      0,
+      'iban_field',
+    )
+  );
+  $iban = drupal_array_get_nested_value($form_state['values'], $iban_parents);
+  $bic_call = _robinwood_forms_cmrf_send_call(
+    'Bic',
+    'getfromiban',
+    array(
+      'iban' => $iban,
+    ),
+    array()
+  );
+
   if (empty($element['#value'])) {
-    $iban_parents = array_merge(
-      $element['#field_parents'],
-      array(
-        'field_iban',
-        LANGUAGE_NONE,
-        0,
-        'iban_field',
-      )
-    );
-    $iban = drupal_array_get_nested_value($form_state['values'], $iban_parents);
-    // TODO:
-    //   $bic = _robinwood_forms_get_bic_from_iban($iban);
-    if (!empty($bic)) {
-      form_set_value($element, $bic, $form_state);
+    if (
+      $bic_call->getStatus() == \CMRF\Drupal\Call::STATUS_DONE
+      && ($bic_reply = $bic_call->getReply())
+      && !empty($bic_reply['bic'])
+    ) {
+      form_set_value($element, $bic_reply['bic'], $form_state);
+      // TODO: Why is setting $form_state['input'] also necessary?
+      drupal_array_set_nested_value($form_state['input'], $element['#parents'], $bic_reply['bic'], TRUE);
+      drupal_set_message('Ihre BIC wurde automatisch ermittelt: ' . $bic_reply['bic']);
     }
     else {
       form_error($element, 'Die BIC konnte nicht automatisch ermittelt werden, bitte geben Sie diese ein.');
     }
   }
+  else {
+    if (
+      $bic_call->getStatus() == \CMRF\Drupal\Call::STATUS_DONE
+      && ($bic_reply = $bic_call->getReply())
+      && !empty($bic_reply['bic'])
+      && $bic_reply['bic'] != $element['#value']
+    ) {
+      form_error($element, 'Die eingegebene BIC stimmt nicht mit der automatisch ermittelten (' . $bic_reply['bic'] . ') überein, bitte überprüfen Sie die BIC.');
+    }
+  }
+}
+
+function _robinwood_forms_cmrf_send_call($entity, $action, $parameters, $options, $profile=null, $callbacks=array()) {
+  $connector_id = _robinwood_forms_cmrf_get_connector_id($profile);
+  $core = cmrf_core_get_core();
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options, $callbacks);
+  $core->executeCall($call);
+  return $call;
+}
+
+function _robinwood_forms_cmrf_get_connector_id($profile=null) {
+  $connector_name = 'robinwood_forms_cmrf_connector';
+  if (!empty($profile)) {
+    $connector_name .= ':'.$profile;
+  }
+
+  $core = cmrf_core_get_core();
+  $connector_id = variable_get($connector_name);
+  if (empty($connector_id)) {
+    $connector_id = $core->registerConnector($connector_name, $profile);
+    variable_set($connector_name, $connector_id);
+  }
+  return $connector_id;
 }
