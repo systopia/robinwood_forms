@@ -80,7 +80,7 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
       '',
     ))
   ) {
-    $element['street_block']['thoroughfare']['#title'] = 'Straße, Hausnummer';
+    $element['street_block']['thoroughfare']['#title'] = 'Straße mit Hausnummer';
     $element['street_block']['premise']['#access'] = FALSE;
     $element['country']['#weight'] = 51;
   }
