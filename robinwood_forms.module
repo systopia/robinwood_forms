@@ -89,6 +89,7 @@ function robinwood_forms_field_widget_form_alter(&$element, &$form_state, $conte
   if (
     $context['instance']['entity_type'] == 'commerce_payment_transaction'
     && $context['instance']['field_name'] == 'field_bic'
+    && $form_state['build_info']['form_id'] != 'field_ui_field_edit_form'
   ) {
     if (!isset($element['value']['#element_validate'])) {
       $element['value']['#element_validate'] = array();
