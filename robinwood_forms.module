@@ -7,8 +7,8 @@ function robinwood_forms_inline_entity_form_entity_form_alter(&$entity_form, &$f
   $product_ids = array(
     'donation' => 1,
     'active_membership' => 2,
-    'sponsor_membership' => 3,
-    'regular_donation' => 4,
+    'sponsor_membership' => 4,
+    'regular_donation' => 3,
   );
 
   if ($entity_form['#entity_type'] == 'commerce_line_item' && in_array($entity_form['#parents'][0], array(
