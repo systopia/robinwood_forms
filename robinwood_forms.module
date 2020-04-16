@@ -167,3 +167,14 @@ function _robinwood_forms_cmrf_get_connector_id($profile=null) {
   }
   return $connector_id;
 }
+
+/**
+ * Implements hook_commerce_checkout_page_info_alter().
+ */
+function robinwood_forms_commerce_checkout_page_info_alter(&$checkout_pages) {
+  // Change submit button caption and disable "Back" button.
+  if(!empty($checkout_pages['checkout'])) {
+    $checkout_pages['checkout']['submit_value'] = t('Send payment');
+    $checkout_pages['checkout']['back_value'] = NULL;
+  }
+}
